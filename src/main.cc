@@ -249,59 +249,6 @@ void ParseFile(const string &filename)
     file.close();
 }
 
-double Dot(pair<double,double> a,
-           pair<double,double> b)
-{
-    return (a.first*b.first) + (a.second*b.second);
-}
-
-double PerpDot(pair<double,double> a,
-               pair<double,double> b)
-{
-    return (a.second*b.first) - (a.first*b.second);
-}
-
-bool Intersects(vector<pair<double,double>> A,
-                vector<pair<double,double>> B)
-{
-    auto a = make_pair(A[1].first-A[0].first,
-                       A[1].second-A[0].second);
-
-    auto b = make_pair(B[1].first-B[0].first,
-                       B[1].second-B[0].second);
-
-    double f = PerpDot(a,b);
-
-    if(!f)
-    {
-        // lines are parallel
-        return false;
-    }
-
-    auto c = make_pair(B[1].first-A[1].first,
-                       B[1].second-A[1].second);
-
-    double aa = PerpDot(a,c);
-    double bb = PerpDot(b,c);
-
-    if(f < 0)
-    {
-        if(aa > 0) return false;
-        if(bb > 0) return false;
-        if(aa < f) return false;
-        if(bb < f) return false;
-    }
-    else
-    {
-        if(aa < 0) return false;
-        if(bb < 0) return false;
-        if(aa > f) return false;
-        if(bb > f) return false;
-    }
-
-    return true;
-}
-
 void PlotBuildings(CImg<double>& image)
 {
     for (auto &it : buildings)

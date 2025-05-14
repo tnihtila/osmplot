@@ -72,12 +72,8 @@ bool Line::Intersects(const Line& line)
    Point u = b();
    u = u-a();
 
-   // make_pair(A[1].first-A[0].first,
-   //                    A[1].second-A[0].second);
-
    Point v = line.b();
-   v = v-line.a();// make_pair(B[1].first-B[0].first,
-   // B[1].second-B[0].second);
+   v = v-line.a();
 
    double f = u.PerpDot(v);
 
@@ -89,25 +85,23 @@ bool Line::Intersects(const Line& line)
 
    auto c = line.b();
    c = c-b();
-// make_pair(B[1].first-A[1].first,
-//                       B[1].second-A[1].second);
 
    double aa = u.PerpDot(c);
    double bb = v.PerpDot(c);
 
    if(f < 0)
    {
-      if(aa > 0)     return false;
-      if(bb > 0)     return false;
-      if(aa < f)     return false;
-      if(bb < f)     return false;
+      if(aa > 0) return false;
+      if(bb > 0) return false;
+      if(aa < f) return false;
+      if(bb < f) return false;
    }
    else
    {
-      if(aa < 0)     return false;
-      if(bb < 0)     return false;
-      if(aa > f)     return false;
-      if(bb > f)     return false;
+      if(aa < 0) return false;
+      if(bb < 0) return false;
+      if(aa > f) return false;
+      if(bb > f) return false;
    }
 
    return true;
