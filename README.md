@@ -1,6 +1,6 @@
 # osmplot
 
-Parse Openstreetmap OSM files and plot buildings and ways.
+Tool parses Openstreetmap OSM files and plots its buildings and ways. It also plots lanes of specific width around the way lines ensuring they do not overlap with any of the buildings beside to the way. 
 
 ## Overview
 
