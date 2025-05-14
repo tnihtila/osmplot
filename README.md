@@ -40,7 +40,7 @@ On Debian/Ubuntu:
    make
    ```
 
-3. Test
+3. Test with an example input OSM file
    ```bash
    ./bin/osmplot ../input/jurvala.osm
    ```
