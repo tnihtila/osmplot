@@ -1,18 +1,10 @@
 # osmplot
 
-Tool parses Openstreetmap OSM files and plots its buildings and ways. It also plots lanes of specific width around the way lines ensuring they do not overlap with any of the buildings beside to the way. 
+Tool parses Openstreetmap OSM files and plots its buildings and ways. 
 
 ## Overview
 
-`osmplot` is a small tool designed to process OpenStreetMap (OSM) data files. It provides functionality to parse data and visualize map elements like buildings and ways.
-
-This tool is written in **C++**.
-
-## Features
-
-- Parse OpenStreetMap OSM files.
-- Plot buildings and ways from the parsed data.
-- Lightweight implementation.
+`osmplot` is a small C++ tool to process OpenStreetMap (OSM) data files. It currently provides functionality to parse data and visualize map elements like buildings and ways. It plots lanes of specific width around the way lines ensuring they do not overlap with any of the buildings beside to the way.
 
 ## Prerequisities
 
