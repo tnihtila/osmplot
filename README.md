@@ -4,15 +4,24 @@ Parse Openstreetmap OSM files and plot buildings and ways.
 
 ## Overview
 
-`osmplot` is a tool designed to process OpenStreetMap (OSM) data files. It provides functionality to parse data and visualize map elements like buildings and ways.
+`osmplot` is a small tool designed to process OpenStreetMap (OSM) data files. It provides functionality to parse data and visualize map elements like buildings and ways.
 
-This tool is written primarily in **C** with some **C++**, ensuring efficient processing of large OSM datasets.
+This tool is written in **C++**.
 
 ## Features
 
 - Parse OpenStreetMap OSM files.
 - Plot buildings and ways from the parsed data.
-- Lightweight and efficient implementation.
+- Lightweight implementation.
+
+## Prerequisities
+
+osmplot requires the X11 development package
+
+On Debian/Ubuntu:
+   ```bash
+   sudo apt-get install libx11-dev
+   ```
 
 ## Installation
 
@@ -20,4 +29,20 @@ This tool is written primarily in **C** with some **C++**, ensuring efficient pr
 
    ```bash
    git clone https://github.com/tnihtila/osmplot.git
+   ```
+   
+2. Build
+   ```bash
    cd osmplot
+   mkdir build
+   cd build
+   cmake ..
+   make
+   ```
+
+3. Test
+   ```bash
+   ./bin/osmplot ../input/jurvala.osm
+   ```
+   
+   
