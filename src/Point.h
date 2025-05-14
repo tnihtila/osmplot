@@ -1,5 +1,5 @@
-#ifndef Point_h
-#define Point_h
+#ifndef POINT_H
+#define POINT_H
 
 #include <utility>
 #include <tuple>
@@ -43,4 +43,4 @@ private:
     static bool limitsConverted_m;
 };
 
-#endif // Point_h
+#endif // POINT_H

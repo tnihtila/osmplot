@@ -1,8 +1,8 @@
 // Created         : 2014-06-19T12:37:53+0300
 // Author          : Timo Nihtila <timo.nihtila@gmail.com>
 
-#ifndef Line_h
-#define Line_h
+#ifndef LINE_H
+#define LINE_H
 
 #include "Point.h"
 #define cimg_display 1
@@ -37,4 +37,4 @@ class Line
       bool isOpen_m;
 };
 
-#endif // Line_h
+#endif // LINE_H

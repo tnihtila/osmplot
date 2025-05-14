@@ -41,4 +41,4 @@ class CoordinateConverter
   CoordinateConverter& operator=( const CoordinateConverter& );
 };
 
-#endif
+#endif // COORDINATECONVERTER_H

@@ -6,7 +6,10 @@
 #include <math.h>
 #include <iostream>
 
-std::tuple<double,double,double,double> Point::worldLimits_m(999999,999999,-999999,-999999);
+std::tuple<double,double,double,double> Point::worldLimits_m(std::numeric_limits<double>::max(),
+                                                             std::numeric_limits<double>::max(),
+                                                             -std::numeric_limits<double>::max(),
+                                                             -std::numeric_limits<double>::max());
 CoordinateConverter Point::conv_m;
 bool Point::limitsConverted_m = false;
 
@@ -123,7 +126,7 @@ Point Point::ProjectionToLine(const Line& line) const
 
    if (t < 0.0)
    {
-      return Point(line.a());       // Beyond the 'v' end of the segment
+      return Point(line.a()); // Beyond the 'v' end of the segment
    }
    else if (t > 1.0)
    {
