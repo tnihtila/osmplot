@@ -51,167 +51,196 @@ vector<string> SplitString(string str, char delim = ' ')
     return tokens;
 }
 
-void ParseFile(const string& filename)
+// Helper: Detects the delimiter used in the line
+char DetectDelimiter(const string &line)
 {
-    ifstream file;
-
-    file.open(filename);
-    if (file.is_open())
+    if (line.find("\"") != string::npos)
     {
-        if (file.good())
-        {
-            string line;
-            while (getline(file,line))
-            {
-                char delim;
-                if (line.find("\"") != string::npos)
-                {
-                    delim = '\"';
-                }
-                else if(line.find("\'") != string::npos)
-                {
-                    delim = '\'';
-                }
-                if (line.find("<bounds") != string::npos)
-                {
-                    vector<string> tokens = SplitString(line);
-                    string minlat;
-                    string minlon;
-                    string maxlat;
-                    string maxlon;
-                    for (auto &it : tokens)
-                    {
-                        vector<string> tokens1 = SplitString(it, delim);
-                        if (it.find("minlat=") != string::npos)
-                        {
-                            minlat = tokens1[1];
-                        }
-                        else if (it.find("minlon=") != string::npos)
-                        {
-                            minlon = tokens1[1];
-                        }
-                        else if (it.find("maxlat=") != string::npos)
-                        {
-                            maxlat = tokens1[1];
-                        }
-                        else if (it.find("maxlon=") != string::npos)
-                        {
-                            maxlon = tokens1[1];
-                        }
-                    }
+        return '\"';
+    }
+    else if (line.find("\'") != string::npos)
+    {
+        return '\'';
+    }
+    return ' '; // Default fallback
+}
 
-                    Point::SetWorldLimits(stod(minlon),
-                                          stod(minlat),
-                                          stod(maxlon),
-                                          stod(maxlat));
-                }
-                else if (line.find("<node") != string::npos)
-                {
-                    vector<string> tokens = SplitString(line);
-                    string id;
-                    string lat;
-                    string lon;
-                    for (auto &it : tokens)
-                    {
-                        if (it.find("id=") != string::npos &&
-                            it.find("uid=") == string::npos)
-                        {
-                            vector<string> tokens1 = SplitString(it,delim);
-                            id = tokens1[1];
-                        }
-                        if (it.find("lat=") != string::npos)
-                        {
-                            vector<string> tokens1 = SplitString(it,delim);
-                            lat = tokens1[1];
-                        }
-                        if (it.find("lon=") != string::npos)
-                        {
-                            vector<string> tokens1 = SplitString(it,delim);
-                            lon = tokens1[1];
-                        }
-                    }
-                    nodes[id] = make_shared<Point>(stod(lon), stod(lat));
-                }
-                else if (line.find("<way") != string::npos)
-                {
-                    bool isBuilding = false;
-                    bool isWay = false;
-                    vector<string> noderefs;
-                    string id;
-                    vector<string> tokens = SplitString(line);
-                    for (auto &it : tokens)
-                    {
-                        if (it.find("id=") != string::npos && it.find("uid=") == string::npos)
-                        {
-                            vector<string> tokens1 = SplitString(it,delim);
-                            id = tokens1[1];
-                        }
-                    }
-                    while (getline(file,line))
-                    {
-                        if (line.find("way>") != string::npos )
-                        {
-                            if (noderefs.size())
-                            {
-                                if (isBuilding)
-                                {
-                                    vector<string> b;
-                                    for (auto i = 0; i < noderefs.size(); ++i)
-                                    {
-                                        b.push_back(noderefs[i]);
-                                    }
-                                    buildings.insert(b);
-                                    noderefs.clear();
-                                }
-                                else if (isWay)
-                                {
-                                    for (auto i = 0; i < noderefs.size()-1; ++i)
-                                    {
-                                        ways[noderefs[i]][noderefs[i+1]] = laneWidth_meters;
-                                        ways[noderefs[i+1]][noderefs[i]] = laneWidth_meters;
-                                    }
-                                    noderefs.clear();
-                                }
-                            }
-                            break;
-                        }
-                        else if (line.find("<nd ") != string::npos)
-                        {
-                            vector<string> tokens = SplitString(line);
-                            for (auto &it : tokens)
-                            {
-                                if (it.find("ref=") != string::npos)
-                                {
-                                    vector<string> tokens1 = SplitString(it,delim);
-                                    noderefs.push_back(tokens1[1]);
-                                }
-                            }
-                        }
-                        else if (line.find("<tag ") != string::npos)
-                        {
-                            vector<string> tokens = SplitString(line);
-                            for (auto &it : tokens)
-                            {
-                                if (it.find("k=") != string::npos)
-                                {
-                                    vector<string> tokens1 = SplitString(it,delim);
-                                    if (tokens1[1] == "building")
-                                    {
-                                        isBuilding = true;
-                                    }
-                                    if (tokens1[1] == "highway")
-                                    {
-                                        isWay = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+// Helper: Parses <bounds> tag
+void ParseBounds(const string &line, char delim)
+{
+    vector<string> tokens = SplitString(line);
+    string minlat, minlon, maxlat, maxlon;
+
+    for (auto &it : tokens)
+    {
+        vector<string> tokens1 = SplitString(it, delim);
+        if (it.find("minlat=") != string::npos)
+        {
+            minlat = tokens1[1];
+        }
+        else if (it.find("minlon=") != string::npos)
+        {
+            minlon = tokens1[1];
+        }
+        else if (it.find("maxlat=") != string::npos)
+        {
+            maxlat = tokens1[1];
+        }
+        else if (it.find("maxlon=") != string::npos)
+        {
+            maxlon = tokens1[1];
         }
     }
 
+    Point::SetWorldLimits(stod(minlon), stod(minlat), stod(maxlon), stod(maxlat));
+}
+
+// Helper: Parses <node> tag
+void ParseNode(const string &line, char delim)
+{
+    vector<string> tokens = SplitString(line);
+    string id, lat, lon;
+
+    for (auto &it : tokens)
+    {
+        vector<string> tokens1 = SplitString(it, delim);
+        if (it.find("id=") != string::npos && it.find("uid=") == string::npos)
+        {
+            id = tokens1[1];
+        }
+        else if (it.find("lat=") != string::npos)
+        {
+            lat = tokens1[1];
+        }
+        else if (it.find("lon=") != string::npos)
+        {
+            lon = tokens1[1];
+        }
+    }
+
+    nodes[id] = make_shared<Point>(stod(lon), stod(lat));
+}
+
+// Helper: Extracts node references from a line
+void ExtractNodeRefs(const string &line, char delim, vector<string> &noderefs)
+{
+    vector<string> tokens = SplitString(line);
+    for (auto &it : tokens)
+    {
+        if (it.find("ref=") != string::npos)
+        {
+            vector<string> tokens1 = SplitString(it, delim);
+            noderefs.push_back(tokens1[1]);
+        }
+    }
+}
+
+// Helper: Parses tags inside <way> tag
+void ParseWayTags(const string &line, char delim, bool &isBuilding, bool &isWay)
+{
+    vector<string> tokens = SplitString(line);
+    for (auto &it : tokens)
+    {
+        vector<string> tokens1 = SplitString(it, delim);
+        if (it.find("k=") != string::npos)
+        {
+            if (tokens1[1] == "building")
+            {
+                isBuilding = true;
+            }
+            else if (tokens1[1] == "highway")
+            {
+                isWay = true;
+            }
+        }
+    }
+}
+
+// Helper: Adds a way to the global map
+void AddWay(const vector<string> &noderefs)
+{
+    for (size_t i = 0; i < noderefs.size() - 1; ++i)
+    {
+        ways[noderefs[i]][noderefs[i + 1]] = laneWidth_meters;
+        ways[noderefs[i + 1]][noderefs[i]] = laneWidth_meters;
+    }
+}
+
+
+// Helper: Parses <way> tag and its related content
+void ParseWay(ifstream &file, string &line, char delim)
+{
+    bool isBuilding = false, isWay = false;
+    vector<string> noderefs;
+    string id;
+
+    vector<string> tokens = SplitString(line);
+    for (auto &it : tokens)
+    {
+        if (it.find("id=") != string::npos && it.find("uid=") == string::npos)
+        {
+            vector<string> tokens1 = SplitString(it, delim);
+            id = tokens1[1];
+        }
+    }
+
+    while (getline(file, line))
+    {
+        if (line.find("way>") != string::npos)
+        {
+            if (!noderefs.empty())
+            {
+                if (isBuilding)
+                {
+                    buildings.insert(noderefs);
+                }
+                else if (isWay)
+                {
+                    AddWay(noderefs);
+                }
+            }
+            break;
+        }
+        else if (line.find("<nd ") != string::npos)
+        {
+            ExtractNodeRefs(line, delim, noderefs);
+        }
+        else if (line.find("<tag ") != string::npos)
+        {
+            ParseWayTags(line, delim, isBuilding, isWay);
+        }
+    }
+}
+
+void ParseFile(const string &filename)
+{
+    ifstream file(filename);
+    if (!file.is_open())
+    {
+        cerr << "Error opening file: " << filename << endl;
+        return;
+    }
+
+    string line;
+    while (getline(file, line))
+    {
+        char delim = DetectDelimiter(line);
+
+        if (line.find("<bounds") != string::npos)
+        {
+            ParseBounds(line, delim);
+        }
+        else if (line.find("<node") != string::npos)
+        {
+            ParseNode(line, delim);
+        }
+        else if (line.find("<way") != string::npos)
+        {
+            ParseWay(file, line, delim);
+        }
+    }
+
+    // Convert all nodes after parsing
     for (auto &it : nodes)
     {
         it.second->Convert();
@@ -273,7 +302,7 @@ bool Intersects(vector<pair<double,double>> A,
     return true;
 }
 
-void Buildings(CImg<double>& image)
+void PlotBuildings(CImg<double>& image)
 {
     for (auto &it : buildings)
     {
@@ -295,7 +324,7 @@ void Buildings(CImg<double>& image)
     }
 }
 
-void Ways(CImg<double>& image)
+void PlotWays(CImg<double>& image)
 {
     for (auto &it : ways)
     {
@@ -399,12 +428,12 @@ int main(int argc, char* argv[] )
 
     if (plotBuildings)
     {
-        Buildings(image);
+        PlotBuildings(image);
     }
 
     if (plotWays)
     {
-        Ways(image);
+        PlotWays(image);
     }
 
     if (plotLanes)
