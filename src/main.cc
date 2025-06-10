@@ -12,9 +12,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <random>
-#include <tuple>
-#include <algorithm>
 
 #define cimg_display 1
 #include "CImg.h"

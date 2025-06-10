@@ -1,14 +1,14 @@
 #ifndef POINT_H
 #define POINT_H
 
-#include <utility>
-#include <tuple>
 #include "CoordinateConverter.h"
+#include <tuple>
+#include <utility>
 
 class Line;
 class Point
 {
-public:
+  public:
     Point();
     Point(double x, double y);
     Point(std::pair<double, double> data);
@@ -36,10 +36,11 @@ public:
                                double minlat,
                                double maxlon,
                                double maxlat);
-private:
-    std::pair<double,double> data_m;
+
+  private:
+    std::pair<double, double> data_m;
     static CoordinateConverter conv_m;
-    static std::tuple<double,double,double,double> worldLimits_m;
+    static std::tuple<double, double, double, double> worldLimits_m;
     static bool limitsConverted_m;
 };
 
