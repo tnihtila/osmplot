@@ -27,15 +27,15 @@ int black[] = {0,0,0};
 
 double laneWidth_meters = 5.0;
 
-map<string,map<string,double>> ways;
-set<vector<string>> buildings;
-map<string,shared_ptr<Point>> nodes;
+map<std::string,map<std::string,double>> ways;
+set<vector<std::string>> buildings;
+map<std::string,shared_ptr<Point>> nodes;
 
-vector<string> SplitString(string str, char delim = ' ')
+vector<std::string> SplitString(std::string str, char delim = ' ')
 {
-    vector<string> tokens;
-    stringstream ss(str);
-    string token;
+    vector<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
 
     while (getline(ss, token, delim))
     {
@@ -49,41 +49,41 @@ vector<string> SplitString(string str, char delim = ' ')
 }
 
 // Helper: Detects the delimiter used in the line
-char DetectDelimiter(const string &line)
+char DetectDelimiter(const std::string &line)
 {
-    if (line.find("\"") != string::npos)
+    if (line.find("\"") != std::string::npos)
     {
         return '\"';
     }
-    else if (line.find("\'") != string::npos)
+    else if (line.find("\'") != std::string::npos)
     {
         return '\'';
-    }
+    }    
     return ' '; // Default fallback
 }
 
 // Helper: Parses <bounds> tag
-void ParseBounds(const string &line, char delim)
+void ParseBounds(const std::string &line, char delim)
 {
-    vector<string> tokens = SplitString(line);
-    string minlat, minlon, maxlat, maxlon;
+    vector<std::string> tokens = SplitString(line);
+    std::string minlat, minlon, maxlat, maxlon;
 
     for (auto &it : tokens)
     {
-        vector<string> tokens1 = SplitString(it, delim);
-        if (it.find("minlat=") != string::npos)
+        vector<std::string> tokens1 = SplitString(it, delim);
+        if (it.find("minlat=") != std::string::npos)
         {
             minlat = tokens1[1];
         }
-        else if (it.find("minlon=") != string::npos)
+        else if (it.find("minlon=") != std::string::npos)
         {
             minlon = tokens1[1];
         }
-        else if (it.find("maxlat=") != string::npos)
+        else if (it.find("maxlat=") != std::string::npos)
         {
             maxlat = tokens1[1];
         }
-        else if (it.find("maxlon=") != string::npos)
+        else if (it.find("maxlon=") != std::string::npos)
         {
             maxlon = tokens1[1];
         }
@@ -93,23 +93,23 @@ void ParseBounds(const string &line, char delim)
 }
 
 // Helper: Parses <node> tag
-void ParseNode(const string &line, char delim)
+void ParseNode(const std::string &line, char delim)
 {
-    vector<string> tokens = SplitString(line);
-    string id, lat, lon;
+    vector<std::string> tokens = SplitString(line);
+    std::string id, lat, lon;
 
     for (auto &it : tokens)
     {
-        vector<string> tokens1 = SplitString(it, delim);
-        if (it.find("id=") != string::npos && it.find("uid=") == string::npos)
+        vector<std::string> tokens1 = SplitString(it, delim);
+        if (it.find("id=") != std::string::npos && it.find("uid=") == std::string::npos)
         {
             id = tokens1[1];
         }
-        else if (it.find("lat=") != string::npos)
+        else if (it.find("lat=") != std::string::npos)
         {
             lat = tokens1[1];
         }
-        else if (it.find("lon=") != string::npos)
+        else if (it.find("lon=") != std::string::npos)
         {
             lon = tokens1[1];
         }
@@ -119,27 +119,27 @@ void ParseNode(const string &line, char delim)
 }
 
 // Helper: Extracts node references from a line
-void ExtractNodeRefs(const string &line, char delim, vector<string> &noderefs)
+void ExtractNodeRefs(const std::string &line, char delim, vector<std::string> &noderefs)
 {
-    vector<string> tokens = SplitString(line);
+    vector<std::string> tokens = SplitString(line);
     for (auto &it : tokens)
     {
-        if (it.find("ref=") != string::npos)
+        if (it.find("ref=") != std::string::npos)
         {
-            vector<string> tokens1 = SplitString(it, delim);
+            vector<std::string> tokens1 = SplitString(it, delim);
             noderefs.push_back(tokens1[1]);
         }
     }
 }
 
 // Helper: Parses tags inside <way> tag
-void ParseWayTags(const string &line, char delim, bool &isBuilding, bool &isWay)
+void ParseWayTags(const std::string &line, char delim, bool &isBuilding, bool &isWay)
 {
-    vector<string> tokens = SplitString(line);
+    vector<std::string> tokens = SplitString(line);
     for (auto &it : tokens)
     {
-        vector<string> tokens1 = SplitString(it, delim);
-        if (it.find("k=") != string::npos)
+        vector<std::string> tokens1 = SplitString(it, delim);
+        if (it.find("k=") != std::string::npos)
         {
             if (tokens1[1] == "building")
             {
@@ -154,7 +154,7 @@ void ParseWayTags(const string &line, char delim, bool &isBuilding, bool &isWay)
 }
 
 // Helper: Adds a way to the global map
-void AddWay(const vector<string> &noderefs)
+void AddWay(const vector<std::string> &noderefs)
 {
     for (size_t i = 0; i < noderefs.size() - 1; ++i)
     {
@@ -163,27 +163,26 @@ void AddWay(const vector<string> &noderefs)
     }
 }
 
-
 // Helper: Parses <way> tag and its related content
-void ParseWay(ifstream &file, string &line, char delim)
+void ParseWay(ifstream &file, std::string &line, char delim)
 {
     bool isBuilding = false, isWay = false;
-    vector<string> noderefs;
-    string id;
+    vector<std::string> noderefs;
+    std::string id;
 
-    vector<string> tokens = SplitString(line);
+    vector<std::string> tokens = SplitString(line);
     for (auto &it : tokens)
     {
-        if (it.find("id=") != string::npos && it.find("uid=") == string::npos)
+        if (it.find("id=") != std::string::npos && it.find("uid=") == std::string::npos)
         {
-            vector<string> tokens1 = SplitString(it, delim);
+            vector<std::string> tokens1 = SplitString(it, delim);
             id = tokens1[1];
         }
     }
 
     while (getline(file, line))
     {
-        if (line.find("way>") != string::npos)
+        if (line.find("way>") != std::string::npos)
         {
             if (!noderefs.empty())
             {
@@ -198,18 +197,18 @@ void ParseWay(ifstream &file, string &line, char delim)
             }
             break;
         }
-        else if (line.find("<nd ") != string::npos)
+        else if (line.find("<nd ") != std::string::npos)
         {
             ExtractNodeRefs(line, delim, noderefs);
         }
-        else if (line.find("<tag ") != string::npos)
+        else if (line.find("<tag ") != std::string::npos)
         {
             ParseWayTags(line, delim, isBuilding, isWay);
         }
     }
 }
 
-void ParseFile(const string &filename)
+void ParseFile(const std::string &filename)
 {
     ifstream file(filename);
     if (!file.is_open())
@@ -218,20 +217,20 @@ void ParseFile(const string &filename)
         return;
     }
 
-    string line;
+    std::string line;
     while (getline(file, line))
     {
         char delim = DetectDelimiter(line);
 
-        if (line.find("<bounds") != string::npos)
+        if (line.find("<bounds") != std::string::npos)
         {
             ParseBounds(line, delim);
         }
-        else if (line.find("<node") != string::npos)
+        else if (line.find("<node") != std::string::npos)
         {
             ParseNode(line, delim);
         }
-        else if (line.find("<way") != string::npos)
+        else if (line.find("<way") != std::string::npos)
         {
             ParseWay(file, line, delim);
         }
@@ -279,7 +278,7 @@ void PlotWays(CImg<double>& image)
             int y0 = Point::Flip_Y(tmp, image.height());
             int x1 = static_cast<int>(image.width() * nodes[it1.first]->x() / Point::WorldWidth());
             int y1 = Point::Flip_Y(static_cast<int>(image.height() * nodes[it1.first]->y() / Point::WorldHeight()),image.height());
-
+            
             image.draw_line(x0,y0,x1,y1,blue);
             image.draw_circle(x0,y0,static_cast<int>(image.height()/1000.0),blue,1,1);
             image.draw_circle(x1,y1,static_cast<int>(image.height()/1000.0),blue,1,1);
@@ -356,39 +355,39 @@ int main(int argc, char* argv[] )
         cout << "Not enough arguments!" << endl;
         return 1;
     }
-
+    
     bool plotBuildings = true;
     bool plotWays = true;
     bool plotLanes = true;
-
-    ParseFile(string(argv[1]));
-
+    
+    ParseFile(std::string(argv[1]));
+    
     double scale = Point::WorldWidth() / Point::WorldHeight();
-
+    
     int maxWidth = 1500 * scale;
     int maxHeight = 1500;
-
+    
     CImg<double> image(maxWidth, maxHeight, 1, 3, 1);
-
+    
     if (plotBuildings)
     {
         PlotBuildings(image);
     }
-
+    
     if (plotWays)
     {
         PlotWays(image);
     }
-
+    
     if (plotLanes)
     {
         Lanes(image);
     }
-
+    
     CImgDisplay disp(image, "Map");
     disp.move(500, 200);
     disp.show();
-
+    
     while(true)
     {
         CImgDisplay::wait(disp);
